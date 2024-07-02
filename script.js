@@ -4,7 +4,9 @@ const gameBoard = function(){
              ["", "", ""]];
 
     function checkPosition(x, y) {
-        return (x > 2 || y > 2 || x < 0 || y < 0);
+        let exists = (x > 2 || y > 2 || x < 0 || y < 0);
+        let taken = (board[x][y] !== "");
+        return (exists || taken);
     }
 
     function changeBoard(x, y, symbol) {
