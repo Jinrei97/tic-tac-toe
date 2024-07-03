@@ -92,7 +92,7 @@ const displayController = function() {
         board_div.className = "board";
         for (let row_index = 0; row_index <= 2; row_index++) {
             const row = document.createElement("div");
-            row.className = `row_${row_index}`;
+            row.className = "row";
             for (let col_index = 0; col_index <= 2; col_index++) {
                 const cell = document.createElement("button");
                 cell.className = "cell";
@@ -102,7 +102,7 @@ const displayController = function() {
             board_div.appendChild(row);
         }
         document.querySelector("body").appendChild(board_div);
-    }
+    };
 
     return { displayBoard };
 }();
