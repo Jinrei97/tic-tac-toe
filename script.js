@@ -93,15 +93,36 @@ const displayController = function() {
         for (let row_index = 0; row_index <= 2; row_index++) {
             const row = document.createElement("div");
             row.className = "row";
+            row.classList.add(`${row_index}`);
             for (let col_index = 0; col_index <= 2; col_index++) {
                 const cell = document.createElement("button");
                 cell.className = "cell";
+                cell.classList.add(`${row_index}${col_index}`);
                 cell.textContent = board[row_index][col_index];
+                cell.addEventListener("click", e => {
+                    cellClick(e);
+                });
                 row.appendChild(cell);
             }
             board_div.appendChild(row);
         }
         document.querySelector("body").appendChild(board_div);
+    };
+
+    function cellClick(event) {
+        const cell = event.target;
+        position = cell.classList[1];
+        gameBoard.getPlayerChoice(position);
+        updateBoard();
+    };
+
+    function updateBoard() {
+        const board = gameBoard.board;
+        const cells = document.querySelectorAll(".cell");
+        cells.forEach(cell => {
+            [x, y] = cell.classList[1];
+            cell.textContent = board[x][y];
+        });
     };
 
     return { displayBoard };
@@ -115,3 +136,5 @@ function Player(symbol) {
 
 const a = new Player("X");
 const b = new Player("O");
+
+displayController.displayBoard();
