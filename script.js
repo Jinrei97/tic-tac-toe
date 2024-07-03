@@ -5,15 +5,21 @@ const gameBoard = {
 
     symbols: ["X", "O"],
     moveNumber: 1,
-    currentPlayer: "X",
+    currentSymbol: "X",
+    currentPlayer: ["test", "X"],
     firstGame: true,
+    player_1: 1,
+    player_2: 1,
+    ended: false,
 
     resetBoard: function() {
         this.board = [["", "", ""],
                       ["", "", ""],
                       ["", "", ""]];
         this.moveNumber = 1;
-        this.currentPlayer = (Math.random() < 0.5) ? this.symbols[0] : this.symbols[1];
+        this.currentSymbol = (Math.random() < 0.5) ? this.symbols[0] : this.symbols[1];
+        this.currentPlayer = (this.currentSymbol === this.player_1.symbol) ? this.player_1 : this.player_2;
+        this.ended = false;
     },
 
     checkPosition: function(x, y) {
@@ -32,7 +38,7 @@ const gameBoard = {
         const directions =    [[0, 1], [0, 1], [0, 1],
                                [1, 0], [1, 0], [1, 0],
                                [1, 1], [1, -1]]; 
-        const symbol = this.currentPlayer;
+        const symbol = this.currentSymbol;
 
         function checkLine(start, direction) {
             let [x, y] = start;
@@ -64,41 +70,46 @@ const gameBoard = {
     },
 
     changeCurrentPlayer: function() {
-        this.currentPlayer = (this.currentPlayer === this.symbols[0]) ? this.symbols[1] : this.symbols[0];
+        this.currentSymbol = (this.currentSymbol === this.symbols[0]) ? this.symbols[1] : this.symbols[0];
+        this.currentPlayer = (this.currentSymbol === this.player_1.symbol) ? this.player_1 : this.player_2;
     },
 
     _ending: function() {
-        console.log(`Player ${this.currentPlayer} won`);
-    },
-    _tie: function() {
-        console.log(`Tie`);
+        this.ended = true;
     },
 
     getPlayerChoice: function(position) {
         let [x, y] = position;
         if (this.checkPosition(x, y)) {
-            console.log("This position doesn't exist");
+            displayController.message("Invalid position");
+        } else if (this.ended === true) {
+            displayController.message("The game is over, please start a new game");
         } else {
-            this.changeBoard(x, y, this.currentPlayer);
+            this.changeBoard(x, y, this.currentSymbol);
             if (this.checkEndState()){
-                this._ending(this.currentPlayer);
+                this._ending.call(this);
+                let winner = (this.currentSymbol === this.player_1.symbol) ? this.player_1.name : this.player_2.name;
+                displayController.message(`${winner} won`);
             } else if( this.moveNumber >= 9) {
-                this._tie();
+                this._ending.call(this);
+                displayController.message("Tie");
+            } else {
+                this.moveNumber += 1;
+                this.changeCurrentPlayer();
+                console.log(`Player's ${this.currentPlayer} turn`);
+                displayController.message(`${this.currentPlayer.name}'s turn`);
             }
-            this.moveNumber += 1;
-            this.changeCurrentPlayer();
-            console.log(`Player's ${this.currentPlayer} turn`);
         }
     },
     
     startButtonEvent: function(event) {
         let name_1 = prompt("What's your name: ");
         let name_2 = prompt("What's your name: ");
-        delete player_1;
-        delete player_2;
-        const player_1 = new Player(name_1, "O");
-        const player_2 = new Player(name_2, "X");
+        this.player_1 = new Player(name_1, "O");
+        this.player_2 = new Player(name_2, "X");
         this.resetBoard();
+        displayController.resetMessages();
+        displayController.message(`${this.currentPlayer.name}'s turn`);
         if (this.firstGame) {
             displayController.displayBoard();
             this.firstGame = false;
@@ -109,6 +120,7 @@ const gameBoard = {
 };
 
 const displayController = function() {
+    const text_display = document.querySelector(".text");
 
     function displayBoard() {
         const board_div = document.createElement("div");
@@ -129,7 +141,7 @@ const displayController = function() {
             }
             board_div.appendChild(row);
         }
-        document.querySelector("body").appendChild(board_div);
+        document.querySelector(".container").appendChild(board_div);
     };
 
     function cellClick(event) {
@@ -147,13 +159,20 @@ const displayController = function() {
         });
     };
 
-    return { displayBoard, updateBoard };
+    function message(msg) {
+        text_display.textContent += `\n${msg}`;
+    }
+
+    function resetMessages() {
+        text_display.textContent = "";
+    }
+
+    return { displayBoard, updateBoard, message, resetMessages };
 }();
 
 function Player(name, symbol) {
+    this.name = name;
     this.symbol = symbol;
-
-    return { symbol };
 };
 
 document.querySelector(".start").addEventListener("click", e => {
